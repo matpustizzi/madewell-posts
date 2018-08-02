@@ -4,8 +4,8 @@ a rudimentary demo of pulling and reformatting wp post content from api for impo
 
 ## getting started
 
-1.  run `npm install`
-2.  run `npm run start`
+1.  `npm install`
+2.  `npm run start`
 
 current implementation performs some simple formatting with cherrio, then saves post content as individual json files in /output.
 
