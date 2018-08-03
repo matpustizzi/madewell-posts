@@ -19,7 +19,7 @@ let getPagedEndpoints = count => {
 
 let processEndpoints = (endpoint, i) =>
   throttle(async () => {
-    console.log(`Processing page ${i + 1}`);
+    //console.log(`Processing page ${i + 1}`);
     let response = await fetch(endpoint);
     let responseText = await response.text();
     let data = JSON.parse(responseText);
