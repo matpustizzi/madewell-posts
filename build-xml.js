@@ -2,9 +2,6 @@ const klawSync = require("klaw-sync");
 const path = require("path");
 const fs = require("fs");
 var builder = require("xmlbuilder");
-const createThrottle = require("async-throttle");
-let throttle = createThrottle(5); //only process 5 results at a time
-
 let directoryToExplore = "./output";
 
 let filterFn = item => {
@@ -20,7 +17,7 @@ let files = klawSync(directoryToExplore, {
 // init xml document
 let root = builder.begin().ele("root", { version: "1.0", encoding: "UTF-8" });
 
-var bar = new Promise((resolve, reject) => {
+var buildContentNodes = new Promise((resolve, reject) => {
   files.forEach(file => {
     try {
       var file = fs.readFileSync(file.path, {
@@ -53,7 +50,7 @@ var bar = new Promise((resolve, reject) => {
   });
 });
 
-bar.then(() => {
+buildContentNodes.then(() => {
   root.end({
     pretty: true,
     indent: "  ",
