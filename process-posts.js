@@ -3,6 +3,8 @@ const cheerio = require("cheerio");
 const createThrottle = require("async-throttle");
 const stringify = require("json-stringify-safe");
 const fetch = require("node-fetch");
+let jsonPath = "./json-output";
+let imagePath = "./images";
 //const download = require("image-downloader");
 
 let throttle = createThrottle(5); // only process 5 posts at a time
@@ -94,7 +96,7 @@ let fetchImages = (images, post) => {
       try {
         download({
           source: removeQueryString(image.attribs.src),
-          dest: `./output/images/${finalImagePath({
+          dest: `${imagePath}/${finalImagePath({
             src: image.attribs.src,
             slug: post.slug,
             index: i
@@ -107,6 +109,18 @@ let fetchImages = (images, post) => {
   });
 };
 
+let getThumb = (images, post) => {
+  let img;
+  if (post.post_thumbnail) {
+    img = post.post_thumbnail.url;
+  } else if (post.featured_image) {
+    img = post.featured_image;
+  } else if (images.length && images[0].attribs.src) {
+    img = images[0].attribs.src;
+  }
+  return img;
+};
+
 let processPosts = (post, i) =>
   throttle(async () => {
     console.log(`Processing post # ${i + 1} : ${post.slug}`);
@@ -117,14 +131,17 @@ let processPosts = (post, i) =>
     let images = rootEl.find("img").get();
     Promise.all(fetchImages(images, post)).catch(err => console.log(err));
 
+    let thumb = getThumb(images, post);
     let results = await {
+      slug: post.slug,
       title: toTitleCase(post.title),
-      thumbnail: `${post.featured_image}?resize=500,500`,
+      //...thumb,
+      thumbnail: thumb ? `${removeQueryString(thumb)}?resize=500,500` : "",
       content: formatHtml(rootEl, $, post)
     };
 
     fs.writeFileSync(
-      `./output/${post.slug}.json`,
+      `${jsonPath}/${post.slug}.json`,
       stringify({ results }, null, 2)
     );
   });
