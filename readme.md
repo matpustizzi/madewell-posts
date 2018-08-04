@@ -1,22 +1,25 @@
 # madewell wp migration
 
-a rudimentary demo of pulling and reformatting wp post content from api for import to sfcc
+a basic demo of pulling and reformatting wp post content from api for import to sfcc
 
 ## getting started
 
 1.  `npm install`
 2.  `npm run start`
 
-current implementation performs some simple formatting with cherrio, then saves post content as individual json files in /output.
+start script runs fetch-posts.js. this pulls posts from wp api, and then saves json files for each post into /json-output. script also downloads image files from within post content and saves files to /images.
+
+after json files have been saved to /json-output, run `node build-xml.js` to generate an xml file for sfcc.
+
+current xml file is incomplete - need to add 'folder' node and a few other missing bits.
 
 ## todos
 
-- download images in post body
 - download thumbnails and crop them to 500x500 using wp query params
 - download videos that need to be moved to scene7 (may not be necessary if all have already been moved)
 - rewrite video paths for any videos need to be moved to scene7, add respnsive video tags (square)
 - add responsive video tags around youtube/vimeo embeds (16x9)
-- convert json results to xml that sfcc will accept
+- finish xml output with any missing data (thumbs)
 - add any additional data to results that is relevant for migration such as date
 - possibly identify a pattern to determine correct folders for posts. i.e.: all with 'ladies we love' in title can be automatically assigned that category
 - if necessary for migration, get any relevant data needed for migration not returned from wp. i.e. folder and id for each post
