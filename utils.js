@@ -36,11 +36,12 @@ module.exports = {
 
     return this.scene7BasePath + options.image + params;
   },
-  getFilename: function(url) {
+  getFilename: function(options) {
     // strips domain and query string from an image url, returning only filename
-    return this.removeExtension(
-      this.getLastSegment(this.removeQueryString(url))
-    );
+    let { url, removeExtension } = options;
+    let file = this.getLastSegment(this.removeQueryString(url));
+
+    return removeExtension ? this.removeExtension(file) : file;
   },
   renamePostImage: function(options) {
     let { src, slug, index } = options;

@@ -1,47 +1,52 @@
-// async function download(options) {
-//   const res = await fetch(options.source);
-//   await new Promise((resolve, reject) => {
-//     const fileStream = fs.createWriteStream(options.dest);
+const fs = require("fs");
+const fetch = require("node-fetch");
+const createThrottle = require("async-throttle");
+const utils = require("./utils.js");
+const { paths } = require("./config.js");
+let throttle = createThrottle(2); // only download 2 images simultaneously
 
-//     res.body.pipe(fileStream);
-//     res.body.on("error", err => {
-//       reject(err);
-//     });
-//     fileStream.on("finish", function() {
-//       resolve();
-//     });
-//   });
-// }
+async function download(options) {
+  const res = await fetch(options.source);
+  await new Promise((resolve, reject) => {
+    const fileStream = fs.createWriteStream(options.dest);
+    res.body.pipe(fileStream);
+    res.body.on("error", err => {
+      reject(err);
+    });
+    fileStream.on("finish", function() {
+      resolve();
+    });
+  });
+}
 
-// let finalImagePath = options => {
-//   let imagePath = removeQueryString(options.src);
-//   let imageExtension = imagePath.match(/(?:\.([^.]+))?$/)[0];
-//   return `${options.slug}-${options.index + 1}${imageExtension}`;
-// };
+module.exports = {
+  downloadPostImages: function(options) {
+    let { images, slug } = options;
+    return images.map((image, i) => {
+      return throttle(async () => {
+        let sourceUrl = utils.removeQueryString(image);
+        let renamedImage = utils.renamePostImage({
+          src: utils.getFilename({ url: image }),
+          slug: slug,
+          index: i
+        });
+        let dest = `${paths.images}/${renamedImage}`;
 
-// let imageThrottle = createThrottle(2);
-// let fetchImages = (images, post) => {
-//   return images.map((image, i) => {
-//     return imageThrottle(async () => {
-//       console.log(`downloading ${removeQueryString(image.attribs.src)}`);
-//       await new Promise(resolve => setTimeout(resolve, 1000));
-//       // let imagePath = removeQueryString(image.attribs.src);
-//       // let imageExtension = imagePath.match(/(?:\.([^.]+))?$/)[0];
-//       try {
-//         download({
-//           source: removeQueryString(image.attribs.src),
-//           dest: `${imagePath}/${finalImagePath({
-//             src: image.attribs.src,
-//             slug: post.slug,
-//             index: i
-//           })}`
-//         });
-//       } catch (e) {
-//         console.error(e);
-//       }
-//     });
-//   });
-// };
+        console.log(`saving ${sourceUrl} to ${dest}`);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1s
+
+        try {
+          download({
+            source: sourceUrl,
+            dest: dest
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    });
+  }
+};
 
 // let getThumb = (images, post) => {
 //   let img;

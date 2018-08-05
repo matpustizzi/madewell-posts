@@ -22,7 +22,7 @@ let formatHtml = function(options) {
       let src = $(el).attr("src");
       let alt = $(el).attr("alt");
       let renamedImage = utils.renamePostImage({
-        src: utils.getFilename(src),
+        src: utils.getFilename({ url: src, removeExtension: true }),
         slug: slug,
         index: i
       });
@@ -42,34 +42,40 @@ let formatHtml = function(options) {
 
 let processPosts = (post, i) =>
   throttle(async () => {
-    console.log(`Processing post # ${i + 1} : ${post.slug}`);
+    let { title, slug, content } = post;
+    console.log(`Processing post # ${i + 1} : ${slug}`);
 
-    let $ = await cheerio.load(post.content, { xmlMode: true });
-    let rootEl = $.root();
+    let $ = await cheerio.load(content, { xmlMode: true }); // parse dom with cheerio
+    let rootEl = $.root(); // selects all post content html
     let els = {
       root: rootEl,
       images: rootEl.find("img"),
       inlineStyles: rootEl.find("[style]")
-    };
+    }; // save common elements to els var
 
-    // let images = rootEl.find("img").get();
-    // Promise.all(fetchImages(images, post)).catch(err => console.log(err));
+    let imageSrcs = els.images.get().map(image => image.attribs.src); // map cheerio image objs to array containing only image urls
+    Promise.all(
+      processImages.downloadPostImages({
+        images: imageSrcs,
+        slug: slug
+      })
+    ).catch(err => console.log(err)); // loop through image urls and download
 
     //let thumb = getThumb(images, post);
     let results = await {
-      slug: post.slug,
-      title: utils.toTitleCase(post.title),
+      slug: slug,
+      title: utils.toTitleCase(title),
       //...thumb,
       //thumbnail: thumb ? `${removeQueryString(thumb)}?resize=500,500` : "",
       content: formatHtml({
         $: $,
         els: els,
-        slug: post.slug
+        slug: slug
       })
     };
 
     fs.writeFileSync(
-      `${paths.json}/${post.slug}.json`,
+      `${paths.json}/${slug}.json`,
       stringify({ results }, null, 2)
     );
   });
