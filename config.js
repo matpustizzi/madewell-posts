@@ -2,6 +2,7 @@ module.exports = {
   paths: {
     json: "./json-output",
     images: "./images",
-    thumbs: "./thumbs"
+    thumbs: "./thumbs",
+    xml: "./xml-output"
   }
 };

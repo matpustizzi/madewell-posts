@@ -44,9 +44,11 @@ module.exports = {
     return removeExtension ? this.removeExtension(file) : file;
   },
   renamePostImage: function(options) {
-    let { src, slug, index } = options;
+    let { src, slug, index, suffix } = options;
     let imagePath = src;
     let imageExtension = imagePath.match(/(?:\.([^.]+))?$/)[0];
-    return `${slug}-${index + 1}${imageExtension}`;
+    return `${slug}${index != null ? `-${index + 1}` : ""}${
+      suffix ? suffix : ""
+    }${imageExtension}`;
   }
 };

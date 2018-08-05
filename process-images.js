@@ -20,17 +20,48 @@ async function download(options) {
 }
 
 module.exports = {
+  determineThumb: function(images, post) {
+    var output;
+
+    if (post.post_thumbnail && post.post_thumbnail.url) {
+      output = post.post_thumbnail.url;
+    } else if (post.featured_image) {
+      output = post.featured_image;
+    } else if (images.length && images[0]) {
+      output = images[0];
+    }
+
+    // console.log(post.title);
+    // if (post.post_thumbnail && post.post_thumbnail.url)
+    //   console.log("post.post_thumbnail.url: " + post.post_thumbnail.url);
+    // if (post.featured_image)
+    //   console.log("post.featured_image: " + post.featured_image);
+    // if (images.length && images[0].attribs.src)
+    //   console.log("images[0].attribs.src: " + images[0].attribs.src);
+
+    return output;
+  },
   downloadPostImages: function(options) {
-    let { images, slug } = options;
+    let {
+      images,
+      slug,
+      appendIndex,
+      directory,
+      suffix,
+      resizeSourceParams // should be a WP resize query param without ?
+    } = options;
     return images.map((image, i) => {
       return throttle(async () => {
-        let sourceUrl = utils.removeQueryString(image);
+        let sourceUrl = `${utils.removeQueryString(image)}${
+          resizeSourceParams ? `?${resizeSourceParams}` : ""
+        }`;
         let renamedImage = utils.renamePostImage({
           src: utils.getFilename({ url: image }),
           slug: slug,
-          index: i
+          index: appendIndex ? i : null,
+          suffix: suffix || null
         });
-        let dest = `${paths.images}/${renamedImage}`;
+        let dest = `${directory}/${renamedImage}`;
 
         console.log(`saving ${sourceUrl} to ${dest}`);
         await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1s
@@ -47,15 +78,3 @@ module.exports = {
     });
   }
 };
-
-// let getThumb = (images, post) => {
-//   let img;
-//   if (post.post_thumbnail) {
-//     img = post.post_thumbnail.url;
-//   } else if (post.featured_image) {
-//     img = post.featured_image;
-//   } else if (images.length && images[0].attribs.src) {
-//     img = images[0].attribs.src;
-//   }
-//   return img;
-// };

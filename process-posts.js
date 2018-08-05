@@ -40,33 +40,66 @@ let formatHtml = function(options) {
   return els.root.html();
 };
 
+let getThumb = (images, post) => {
+  console.log(images, post.thumbnail);
+  let img;
+  if (post.post_thumbnail) {
+    img = post.post_thumbnail.url;
+  } else if (post.featured_image) {
+    img = post.featured_image;
+  } else if (images.length && images[0].attribs.src) {
+    img = images[0].attribs.src;
+  }
+  return img;
+};
+
 let processPosts = (post, i) =>
   throttle(async () => {
-    let { title, slug, content } = post;
+    var { title, slug, content } = post;
     console.log(`Processing post # ${i + 1} : ${slug}`);
 
-    let $ = await cheerio.load(content, { xmlMode: true }); // parse dom with cheerio
-    let rootEl = $.root(); // selects all post content html
-    let els = {
+    var $ = await cheerio.load(content, { xmlMode: true }); // parse dom with cheerio
+    var rootEl = $.root(); // selects all post content html
+    var els = {
       root: rootEl,
       images: rootEl.find("img"),
       inlineStyles: rootEl.find("[style]")
     }; // save common elements to els var
 
-    let imageSrcs = els.images.get().map(image => image.attribs.src); // map cheerio image objs to array containing only image urls
+    var imageSrcs = els.images.get().map(image => image.attribs.src); // map cheerio image objs to array containing only image urls
     Promise.all(
       processImages.downloadPostImages({
         images: imageSrcs,
-        slug: slug
+        slug: slug,
+        appendIndex: true,
+        directory: paths.images
       })
     ).catch(err => console.log(err)); // loop through image urls and download
 
-    //let thumb = getThumb(images, post);
+    var thumbnail = await processImages.determineThumb(imageSrcs, post);
+    if (thumbnail) {
+      Promise.all(
+        processImages.downloadPostImages({
+          images: [thumbnail],
+          slug: slug,
+          appendIndex: false,
+          suffix: "-thumb",
+          directory: paths.thumbs,
+          resizeSourceParams: "resize=500,500"
+        })
+      ).catch(err => console.log(err)); // loop through thumb urls and download
+    }
+
     let results = await {
       slug: slug,
       title: utils.toTitleCase(title),
-      //...thumb,
-      //thumbnail: thumb ? `${removeQueryString(thumb)}?resize=500,500` : "",
+      thumbnail: thumbnail
+        ? `images/blog/migrated/${utils.renamePostImage({
+            src: utils.getFilename({ url: thumbnail }),
+            slug: slug,
+            suffix: "-thumb"
+          })}`
+        : "",
       content: formatHtml({
         $: $,
         els: els,
