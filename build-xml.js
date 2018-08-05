@@ -1,7 +1,7 @@
 const klawSync = require("klaw-sync");
 const path = require("path");
 const fs = require("fs");
-var builder = require("xmlbuilder");
+const builder = require("xmlbuilder");
 let directoryToExplore = "./output";
 
 let filterFn = item => {
