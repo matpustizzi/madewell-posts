@@ -2,20 +2,26 @@ const klawSync = require("klaw-sync");
 const path = require("path");
 const fs = require("fs");
 const builder = require("xmlbuilder");
-let directoryToExplore = "./output";
+const { paths } = require("./config.js");
 
 let filterFn = item => {
   const basename = path.basename(item.path);
   return basename === "." || basename[0] !== ".";
 };
 
-let files = klawSync(directoryToExplore, {
+let files = klawSync(paths.json, {
   nodir: true,
   filter: filterFn
 });
 
 // init xml document
-let root = builder.begin().ele("root", { version: "1.0", encoding: "UTF-8" });
+
+let root = builder.begin().ele("xml", { version: "1.0", encoding: "UTF-8" });
+
+let library = root.ele("library", {
+  xmlns: "http://www.demandware.com/xml/impex/library/2006-10-31",
+  "libary-id": "SiteGenesisSharedLibrary"
+});
 
 var buildContentNodes = new Promise((resolve, reject) => {
   files.forEach(file => {
@@ -32,16 +38,32 @@ var buildContentNodes = new Promise((resolve, reject) => {
           "online-flag": { "#text": true },
           "searchable-flag": { "#text": true },
           template: { "#text": "/content/blog/article_open.isml" },
+          "page-attributes": "",
           "custom-attributes": {
-            "custom-attribute": {
-              "@attribute-id": "body",
-              "@xml:lang": "x-default",
-              "#text": postData.content
+            "custom-attribute": [
+              {
+                "@attribute-id": "body",
+                "@xml:lang": "x-default",
+                "#text": postData.content
+              },
+              {
+                "@attribute-id": "searchThumbnail",
+                "#text": postData.thumbnail
+              },
+              {
+                "@attribute-id": "image1",
+                "#text": postData.thumbnail
+              }
+            ]
+          },
+          "folder-links": {
+            "folder-link": {
+              "@folder-id": "blog-hidden"
             }
           }
         }
       };
-      root.ele(xmlObj);
+      library.ele(xmlObj);
       resolve();
     } catch (err) {
       console.log(err);
@@ -57,5 +79,5 @@ buildContentNodes.then(() => {
     newline: "\n",
     spacebeforeslash: ""
   });
-  fs.writeFileSync("./xml-output/import.xml", root);
+  fs.writeFileSync(`${paths.xml}/import.xml`, root);
 });
