@@ -22,7 +22,7 @@ root.att("xmlns", "http://www.demandware.com/xml/impex/library/2006-10-31");
 root.att("library-id", "SiteGenesisSharedLibrary");
 
 var buildContentNodes = new Promise((resolve, reject) => {
-  files.slice(0, 5).forEach(file => {
+  files.forEach(file => {
     try {
       var file = fs.readFileSync(file.path, {
         encoding: "utf8"
