@@ -16,15 +16,13 @@ let files = klawSync(paths.json, {
 
 // init xml document
 
-let root = builder.begin().ele("xml", { version: "1.0", encoding: "UTF-8" });
+let root = builder.create("library", { version: "1.0", encoding: "UTF-8" });
 
-let library = root.ele("library", {
-  xmlns: "http://www.demandware.com/xml/impex/library/2006-10-31",
-  "libary-id": "SiteGenesisSharedLibrary"
-});
+root.att("xmlns", "http://www.demandware.com/xml/impex/library/2006-10-31");
+root.att("library-id", "SiteGenesisSharedLibrary");
 
 var buildContentNodes = new Promise((resolve, reject) => {
-  files.forEach(file => {
+  files.slice(0, 5).forEach(file => {
     try {
       var file = fs.readFileSync(file.path, {
         encoding: "utf8"
@@ -35,8 +33,8 @@ var buildContentNodes = new Promise((resolve, reject) => {
         content: {
           "@content-id": `inspo-${postData.slug}`,
           "display-name": { "@xml:lang": "x-default", "#text": postData.title },
-          "online-flag": { "#text": true },
-          "searchable-flag": { "#text": true },
+          "online-flag": { "#text": false },
+          "searchable-flag": { "#text": false },
           template: { "#text": "/content/blog/article_open.isml" },
           "page-attributes": "",
           "custom-attributes": {
@@ -63,7 +61,7 @@ var buildContentNodes = new Promise((resolve, reject) => {
           }
         }
       };
-      library.ele(xmlObj);
+      root.ele(xmlObj);
       resolve();
     } catch (err) {
       console.log(err);
@@ -73,11 +71,5 @@ var buildContentNodes = new Promise((resolve, reject) => {
 });
 
 buildContentNodes.then(() => {
-  root.end({
-    pretty: true,
-    indent: "  ",
-    newline: "\n",
-    spacebeforeslash: ""
-  });
-  fs.writeFileSync(`${paths.xml}/import.xml`, root);
+  fs.writeFileSync(`${paths.xml}/import.xml`, root.end({ pretty: true }));
 });

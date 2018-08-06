@@ -101,6 +101,7 @@ let processPosts = (post, i) =>
             suffix: "-thumb"
           })}`
         : "",
+      originalContent: els.root.html(),
       content: formatHtml({
         $: $,
         els: els,
