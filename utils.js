@@ -21,9 +21,7 @@ module.exports = {
     var {
         image,
         width,
-        height,
         fit,
-        cropMode,
         quality,
         format,
         extraParams,
@@ -34,7 +32,7 @@ module.exports = {
         noSharpen ? "" : "&op_sharpen=0&resMode=bicub&op_usm=0.5,1,5,0"
       }${extraParams || ""}`;
 
-    return this.scene7BasePath + options.image + params;
+    return this.scene7BasePath + image + params;
   },
   getFilename: function(options) {
     // strips domain and query string from an image url, returning only filename
