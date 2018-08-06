@@ -55,7 +55,7 @@ let getThumb = (images, post) => {
 
 let processPosts = (post, i) =>
   throttle(async () => {
-    var { title, slug, content } = post;
+    var { title, slug, date, content } = post;
     console.log(`Processing post # ${i + 1} : ${slug}`);
 
     var $ = await cheerio.load(content, { xmlMode: true }); // parse dom with cheerio
@@ -92,6 +92,7 @@ let processPosts = (post, i) =>
 
     let results = await {
       slug: slug,
+      date: date,
       title: utils.toTitleCase(title),
       thumbnail: thumbnail
         ? `images/blog/migrated/${utils.renamePostImage({
