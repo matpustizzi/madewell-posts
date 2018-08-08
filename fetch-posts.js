@@ -7,7 +7,7 @@ const stringify = require("json-stringify-safe");
 const processPosts = require("./process-posts.js");
 
 let throttle = createThrottle(5); //only process 5 pages at a time
-let pageCount = 49; // how many pages of posts to fetch (962/20)
+let pageCount = 1; // how many pages of posts to fetch (962/20)
 
 let getPagedEndpoints = count => {
   const range = [...Array(count).keys()];
