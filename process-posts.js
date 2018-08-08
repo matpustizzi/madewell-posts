@@ -36,7 +36,7 @@ let formatHtml = function(options) {
     });
   }
   //console.log(els.root.html());
-  return els.root.html();
+  return `<article class="blog-content blog-content--archived">${els.root.html()}</article>`;
 };
 
 let getThumb = (images, post) => {
