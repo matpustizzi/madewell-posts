@@ -12,8 +12,7 @@ let throttle = createThrottle(5); // only process 5 posts at a time
 
 let formatHtml = function(options) {
   let { $, els, slug } = options;
-
-  $(els.inlineStlyes).each((i, el) => {
+  els.root.find("[style]").each((i, el) => {
     $(el).attr("style", "");
   });
 
@@ -62,8 +61,7 @@ let processPosts = (post, i) =>
     var rootEl = $.root(); // selects all post content html
     var els = {
       root: rootEl,
-      images: rootEl.find("img"),
-      inlineStyles: rootEl.find("[style]")
+      images: rootEl.find("img")
     }; // save common elements to els var
 
     var imageSrcs = els.images.get().map(image => image.attribs.src); // map cheerio image objs to array containing only image urls

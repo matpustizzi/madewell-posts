@@ -71,5 +71,8 @@ var buildContentNodes = new Promise((resolve, reject) => {
 });
 
 buildContentNodes.then(() => {
-  fs.writeFileSync(`${paths.xml}/import.xml`, root.end({ pretty: true }));
+  fs.writeFileSync(
+    `${paths.xml}/wp-migration-${Date.now()}.xml`,
+    root.end({ pretty: true })
+  );
 });
