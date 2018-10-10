@@ -36,7 +36,7 @@ let formatHtml = function(options) {
     });
   }
   //console.log(els.root.html());
-  return `<article class="blog-content blog-content--archived">${els.root.html()}</article>`;
+  return `<article class="blog-content blog-content--archived">${els.root.html().replace(RegExp(String.fromCharCode(31),"g"),"")}</article>`;
 };
 
 let getThumb = (images, post) => {
