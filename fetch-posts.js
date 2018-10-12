@@ -3,11 +3,11 @@ const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 const createThrottle = require("async-throttle");
 const stringify = require("json-stringify-safe");
-
+const { excludedPosts } = require("./config.js");
 const processPosts = require("./process-posts.js");
 
 let throttle = createThrottle(5); //only process 5 pages at a time
-let pageCount = 1; // how many pages of posts to fetch (962/20)
+let pageCount = 49; // how many pages of posts to fetch (962/20)
 
 let getPagedEndpoints = count => {
   const range = [...Array(count).keys()];
@@ -23,7 +23,11 @@ let processEndpoints = (endpoint, i) =>
     let response = await fetch(endpoint);
     let responseText = await response.text();
     let data = JSON.parse(responseText);
-    Promise.all(data.posts.map(processPosts)).catch(err => console.log(err));
+    var filtered = data.posts.filter((post) => {
+      return !excludedPosts.includes(post.URL)
+    });
+    //console.log(filtered.length,data.posts.length)
+    Promise.all(filtered.map(processPosts)).catch(err => console.log(err));
     return data;
   });
 
