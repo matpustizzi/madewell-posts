@@ -12,10 +12,19 @@ let throttle = createThrottle(5); // only process 5 posts at a time
 
 let formatHtml = function(options) {
   let { $, els, slug } = options;
+  // remove inline style
   els.root.find("[style]").each((i, el) => {
     $(el).attr("style", "");
   });
 
+  // if on-site link, remove target and rel attributes
+  els.root.find("a").each((i,el)=> {
+    if($(el).attr("href").includes("madewell.com")) {
+      $(el).removeAttr("target");
+      $(el).removeAttr("rel");
+    }
+  })
+  // replace images with a scene7 path, and remove wrapping p
   if (els.images) {
     $(els.images).each((i, el) => {
       let src = $(el).attr("src");
@@ -26,13 +35,13 @@ let formatHtml = function(options) {
         index: i
       });
       let newImage = $(
-        `<img class="archived-image" src="${ utils.scene7ImagePath({
+        `<img src="${ utils.scene7ImagePath({
           image: renamedImage,
           width: "1000",
           fit: "wrap"
         })}" alt="${alt ? alt : '' }">`
       );
-      $(el).replaceWith(newImage);
+      $(el).closest("p").replaceWith(newImage);
     });
   }
   //console.log(els.root.html());
