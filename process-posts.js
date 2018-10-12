@@ -41,7 +41,13 @@ let formatHtml = function(options) {
           fit: "wrap"
         })}" alt="${alt ? alt : '' }">`
       );
-      $(el).closest("p").replaceWith(newImage);
+      // if img is wrapped in a p, replace both p and img, otherwise replace only img
+      if($(el).parent("p")) {
+        $(el).parent("p").replaceWith(newImage);
+      } else {
+        $(el).replaceWith(newImage);
+      }
+        
     });
   }
   //console.log(els.root.html());
