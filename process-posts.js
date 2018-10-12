@@ -3,7 +3,7 @@ const cheerio = require("cheerio");
 const createThrottle = require("async-throttle");
 const stringify = require("json-stringify-safe");
 const fetch = require("node-fetch");
-
+const he = require("he");
 const processImages = require("./process-images.js");
 const utils = require("./utils.js");
 const { paths } = require("./config.js");
@@ -26,17 +26,19 @@ let formatHtml = function(options) {
         index: i
       });
       let newImage = $(
-        `<img class="archived-image" src="${utils.scene7ImagePath({
+        `<img class="archived-image" src="${ utils.scene7ImagePath({
           image: renamedImage,
           width: "1000",
           fit: "wrap"
-        })}" alt="${alt}">`
+        })}" alt="${alt ? alt : '' }">`
       );
       $(el).replaceWith(newImage);
     });
   }
   //console.log(els.root.html());
-  return `<article class="blog-content blog-content--archived">${els.root.html().replace(RegExp(String.fromCharCode(31),"g"),"")}</article>`;
+  var html = he.decode(els.root.html().replace(RegExp(String.fromCharCode(31),"g"),""));
+
+  return `<article class="blog-content blog-content--archived">${html}</article>`;
 };
 
 let getThumb = (images, post) => {
@@ -91,7 +93,7 @@ let processPosts = (post, i) =>
     let results = await {
       slug: slug,
       date: date,
-      title: utils.toTitleCase(title),
+      title: he.decode(utils.toTitleCase(title)),
       thumbnail: thumbnail
         ? `images/blog/migrated/${utils.renamePostImage({
             src: utils.getFilename({ url: thumbnail }),
@@ -99,7 +101,7 @@ let processPosts = (post, i) =>
             suffix: "-thumb"
           })}`
         : "",
-      originalContent: els.root.html(),
+      //originalContent: els.root.html(),
       content: formatHtml({
         $: $,
         els: els,
